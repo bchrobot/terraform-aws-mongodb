@@ -26,3 +26,8 @@ variable "key_name" {
   type        = "string"
   description = "Name of the key pair to provision the instance with."
 }
+
+variable "private_key" {
+  type        = "string"
+  description = "Private key contents."
+}

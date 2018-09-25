@@ -1,0 +1,24 @@
+---
+- name: Install mongodb
+  apt:
+    name: mongodb-org
+    state: present
+    allow_unauthenticated: yes
+
+- name: Create systemd service file
+  template:
+    src: mongod.service
+    dest: /etc/systemd/system/mongodb.service
+
+- name: Enable Mongod service
+  command: systemctl enable mongodb.service
+  become: yes
+  when: env == 'dev'
+
+- name: Copy MongoDB configuration file
+  template:
+    src: mongod.conf
+    dest: /etc/mongod.conf
+
+- name: Restart mongodb
+  command: systemctl restart mongodb.service

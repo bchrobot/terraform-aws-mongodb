@@ -39,4 +39,19 @@ resource "aws_instance" "mongodb_one" {
   associate_public_ip_address = true
 
   key_name = "${var.key_name}"
+
+  connection {
+    user        = "ubuntu"
+    private_key = "${var.private_key}"
+  }
+
+  provisioner "ansible" {
+    plays {
+      playbook = "${path.module}/provision/playbook.yaml"
+
+      # https://docs.ansible.com/ansible/2.4/intro_inventory.html#hosts-and-groups
+      hosts = ["${self.public_hostname}"]
+      groups = ["db-mongodb"]
+    }
+  }
 }
