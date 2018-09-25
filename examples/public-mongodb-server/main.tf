@@ -9,7 +9,7 @@ provider "aws" {
 
 resource "aws_key_pair" "mongodb" {
   key_name   = "mongodb-key"
-  public_key = "${file("${path.module}/mongodb.pub")}"
+  public_key = "${file("${path.module}/keys/mongodb.pub")}"
 }
 
 module "mongodb" {
@@ -18,4 +18,5 @@ module "mongodb" {
   instance_type = "t2.micro"
   volume_size   = "10"
   key_name      = "${aws_key_pair.mongodb.name}"
+  private_key   = "${file("${path.module}/keys/mongodb.pem")}"
 }
