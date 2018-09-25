@@ -17,6 +17,6 @@ module "mongodb" {
 
   instance_type = "t2.micro"
   volume_size   = "10"
-  key_name      = "${aws_key_pair.mongodb.name}"
+  key_name      = "${aws_key_pair.mongodb.key_name}"
   private_key   = "${file("${path.module}/keys/mongodb.pem")}"
 }
