@@ -3,7 +3,7 @@ data "aws_ami" "ubuntu" {
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
   }
 
   filter {
@@ -19,7 +19,7 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"] # Canonical
 }
 
-resource "aws_instance" "mongodb_one" {
+resource "aws_instance" "mongodb" {
   availability_zone = "${var.availability_zone}"
 
   tags {
@@ -34,15 +34,25 @@ resource "aws_instance" "mongodb_one" {
     volume_size = "${var.volume_size}"
   }
 
-  security_groups = ["${var.security_groups}"]
-
-  associate_public_ip_address = true
-
   key_name = "${var.key_name}"
+  associate_public_ip_address = true
+  security_groups = ["${var.security_groups}"]
 
   connection {
     user        = "ubuntu"
     private_key = "${var.private_key}"
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/provision/wait-for-cloud-init.sh"
+    destination = "/tmp/wait-for-cloud-init.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/wait-for-cloud-init.sh",
+      "/tmp/wait-for-cloud-init.sh",
+    ]
   }
 
   provisioner "ansible" {
@@ -50,7 +60,6 @@ resource "aws_instance" "mongodb_one" {
       playbook = "${path.module}/provision/playbook.yaml"
 
       # https://docs.ansible.com/ansible/2.4/intro_inventory.html#hosts-and-groups
-      hosts = ["${self.public_hostname}"]
       groups = ["db-mongodb"]
     }
   }

@@ -1,24 +1,44 @@
 ---
+- name: Add MongoDB key
+  become: yes
+  apt_key:
+    keyserver: hkp://keyserver.ubuntu.com:80
+    id: 9DA31620334BD75D9DCB49F368818C72E52529D4
+
+- name: Add MongoDB repository
+  become: yes
+  apt_repository:
+    repo: deb [ arch=amd64 ] https://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/4.0 multiverse
+    state: present
+
 - name: Install mongodb
+  become: yes
   apt:
+    update_cache: yes
     name: mongodb-org
     state: present
-    allow_unauthenticated: yes
 
 - name: Create systemd service file
+  become: yes
   template:
     src: mongod.service
-    dest: /etc/systemd/system/mongodb.service
+    dest: /lib/systemd/system/mongod.service
 
 - name: Enable Mongod service
-  command: systemctl enable mongodb.service
   become: yes
-  when: env == 'dev'
+  command: "{{ item }}"
+  with_items:
+    - systemctl --system daemon-reload
+    - systemctl enable mongod.service
 
 - name: Copy MongoDB configuration file
+  become: yes
   template:
     src: mongod.conf
     dest: /etc/mongod.conf
 
 - name: Restart mongodb
-  command: systemctl restart mongodb.service
+  become: yes
+  service:
+    name: mongod
+    state: restarted
